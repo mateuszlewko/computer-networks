@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "*.scm": "racket",
+        "jbuild": "racket",
+        "*.la": "ocaml",
+        "*.fsy": "menhir",
+        "*.fsl": "ocamllex",
+        "utils.h": "c",
+        "inet.h": "c",
+        "errno.h": "c",
+        "ip.h": "c",
+        "sender.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c"
+    }
+}

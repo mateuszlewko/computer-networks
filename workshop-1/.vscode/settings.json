@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.scm": "racket",
+        "jbuild": "racket",
+        "*.la": "ocaml",
+        "*.fsy": "menhir",
+        "*.fsl": "ocamllex",
+        "inet.h": "c"
+    }
+}
