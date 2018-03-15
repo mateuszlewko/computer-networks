@@ -1,18 +1,18 @@
-#include "receiver.h"
-#include "sender.h"
-#include "config.h"
-#include "utils.h"
+#include <bits/types/struct_timeval.h> 
+#include <errno.h>                     
+#include <netinet/in.h>                
+#include <stdbool.h>                   
+#include <stdio.h>                     
+#include <stdlib.h>                    
+#include <string.h>                    
+#include <sys/socket.h>                
+#include <unistd.h>                    
 
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <strings.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-
+#include "config.h"                    
+#include "receiver.h"                  
+#include "sender.h"                    
+#include "utils.h"                     
+ 
 void fail_bad_host() {
     puts("ERROR: Bad host format.");
     exit(EXIT_FAILURE);
@@ -29,7 +29,7 @@ char* parse_args(int argc, char** argv) {
     bool was_zero = false;
     bool was_any = false;
 
-    for (int i = 0; i < strlen(argv[1]); i++) {
+    for (size_t i = 0; i < strlen(argv[1]); i++) {
         if (argv[1][i] == '.' && (!was_any || curr > 255 || curr < 0)) {
             fail_bad_host();
         }
@@ -57,7 +57,6 @@ char* parse_args(int argc, char** argv) {
 void trace(char* target_ip) {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     int pid = getpid();
-    // printf("pid: %d\n", pid);
 
     if (sockfd < 0) {
         fprintf(stderr, "socket error: %s\n", strerror(errno)); 
@@ -85,7 +84,6 @@ void trace(char* target_ip) {
 
             if (!res.success) {
                 any_failed = true;
-                // printf("ttl: %d -> timeout\n", ttl);
             } /* discard packet, but save left time */
             else if (res.id != pid || res.seq / MAX_TTL != ttl) {
                 i--;
@@ -104,20 +102,15 @@ void trace(char* target_ip) {
 
                 // if ip address is unique, save and print it
                 if (!any_equal) {
-                    memcpy(ip_addrs[diff_ip_cnt], res.ip, IP_LEN * sizeof(char));
+                    memcpy(ip_addrs[diff_ip_cnt], res.ip, IP_LEN);
                     diff_ip_cnt++;
 
                     printf("%s ", res.ip);
                 }
 
-                duration_sum_ms += time_diff_ms(max_timeout, res.timeleft);
-                timeleft         = res.timeleft;
-                
-                //printf("dur: %d\n", duration_sum_ms);
-               
-                // printf("ttl: %d -> success from %s, took %ds, %dus! id: %d, seq: %d\n", ttl, res.ip, 
-                //     res.timeleft.tv_sec, res.timeleft.tv_usec, res.id,
-                //     res.seq);
+                duration_sum_ms += time_diff_ms(max_timeout, 
+                                                res.timeleft);
+                timeleft = res.timeleft;
 
                 if (strcmp(res.ip, target_ip) == 0) {
                     reached_final = true;

@@ -1,13 +1,11 @@
 #include "sender.h"
 #include "utils.h"
 
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h>
 #include <arpa/inet.h>
-#include <stdio.h>
+#include <netinet/in.h>
+#include <netinet/ip_icmp.h>
 #include <strings.h>
-#include <string.h>
-#include <errno.h>
+#include <sys/socket.h>
 
 void send_icmp(int sockfd, char *ip_addr, int ttl, u_int16_t id, u_int16_t seq) {
     struct icmphdr icmp_header;
@@ -28,11 +26,6 @@ void send_icmp(int sockfd, char *ip_addr, int ttl, u_int16_t id, u_int16_t seq) 
 
     setsockopt (sockfd, IPPROTO_IP, IP_TTL, &ttl, sizeof(int));
 
-    // puts("sent bytes:");
-    // print_as_bytes((unsigned char*)&icmp_header, sizeof(icmp_header));
-    // puts("");
-
-    ssize_t bytes_sent = sendto(sockfd, &icmp_header, sizeof(icmp_header), 0,
-                                (struct sockaddr*)&recipient, 
-                                sizeof(recipient));
+    sendto(sockfd, &icmp_header, sizeof(icmp_header), 0, 
+           (struct sockaddr*)&recipient, sizeof(recipient));
 }

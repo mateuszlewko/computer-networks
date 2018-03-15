@@ -1,8 +1,7 @@
 #include "utils.h"
 
 #include <assert.h>
-#include <stdio.h>
-#include <byteswap.h>
+#include <bits/types/struct_timeval.h>
 
 u_int16_t compute_icmp_checksum (const void *buff, int length) {
 	u_int32_t sum;
@@ -17,13 +16,7 @@ u_int16_t compute_icmp_checksum (const void *buff, int length) {
 	return (u_int16_t)(~(sum + (sum >> 16)));
 }
 
-void print_as_bytes (unsigned char* buff, ssize_t length) {
-	for (ssize_t i = 0; i < length; i++, buff++) {
-		printf ("%.2x ", *buff);	
-    }
-}
-
-u_int16_t get_uint16(const char *buff, ssize_t len, ssize_t end_pos) {
+u_int16_t get_uint16(const u_int8_t *buff, ssize_t len, ssize_t end_pos) {
 	ssize_t len2B = len / 2;
 	return (((u_int16_t*)buff)[len2B - end_pos]);
 }
