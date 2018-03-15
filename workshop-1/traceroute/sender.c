@@ -28,10 +28,10 @@ void send_icmp(int sockfd, char *ip_addr, int ttl, u_int16_t id, u_int16_t seq) 
 
     setsockopt (sockfd, IPPROTO_IP, IP_TTL, &ttl, sizeof(int));
 
-    puts("sent bytes:");
-    print_as_bytes((unsigned char*)&icmp_header, sizeof(icmp_header));
-    puts("");
-    
+    // puts("sent bytes:");
+    // print_as_bytes((unsigned char*)&icmp_header, sizeof(icmp_header));
+    // puts("");
+
     ssize_t bytes_sent = sendto(sockfd, &icmp_header, sizeof(icmp_header), 0,
                                 (struct sockaddr*)&recipient, 
                                 sizeof(recipient));

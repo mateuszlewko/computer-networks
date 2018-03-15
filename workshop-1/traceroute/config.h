@@ -1,3 +1,3 @@
 #pragma once
 
-const int WAIT_TIME_SEC = 10;
+static const int WAIT_TIME_SEC = 1;

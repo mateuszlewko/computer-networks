@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <byteswap.h>
 
 u_int16_t compute_icmp_checksum (const void *buff, int length) {
 	u_int32_t sum;
@@ -22,10 +23,7 @@ void print_as_bytes (unsigned char* buff, ssize_t length) {
     }
 }
 
-u_int16_t get_response_id(const char *buff) {
-	
-}
-
-u_int16_t get_response_seq(const char *buff) {
-
+u_int16_t get_uint16(const char *buff, ssize_t len, ssize_t end_pos) {
+	ssize_t len2B = len / 2;
+	return (((u_int16_t*)buff)[len2B - end_pos]);
 }
