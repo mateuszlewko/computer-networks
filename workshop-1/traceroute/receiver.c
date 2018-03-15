@@ -20,6 +20,8 @@ struct recv_result recv_icmp(int sockfd, struct timeval max_timeout) {
     FD_ZERO(&descriptors);
     FD_SET(sockfd, &descriptors);
 
+    // printf("before: %ds, %us")
+
     int ready = select(sockfd+1, &descriptors, NULL, NULL, &max_timeout);
     struct recv_result result;
     result.success = true;
@@ -53,8 +55,9 @@ struct recv_result recv_icmp(int sockfd, struct timeval max_timeout) {
     ssize_t len = packet_len - ip_header_len;
     char* data  = buffer + ip_header_len;
 
-    result.id  = get_uint16(data, len, 2);
-    result.seq = get_uint16(data, len, 1);
+    result.id       = get_uint16(data, len, 2);
+    result.seq      = get_uint16(data, len, 1);
+    result.timeleft = max_timeout;
 
     return result;  
 
