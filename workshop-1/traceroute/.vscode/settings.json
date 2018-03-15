@@ -17,6 +17,7 @@
         "config.h": "c",
         "*.tcc": "c",
         "cstdlib": "c",
-        "byteswap.h": "c"
+        "byteswap.h": "c",
+        "socket.h": "c"
     }
 }

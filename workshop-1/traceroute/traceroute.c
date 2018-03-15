@@ -84,6 +84,7 @@ void trace(char* target_ip) {
 
             if (!res.success) {
                 any_failed = true;
+                break;
             } /* discard packet, but save left time */
             else if (res.id != pid || res.seq / MAX_TTL != ttl) {
                 i--;

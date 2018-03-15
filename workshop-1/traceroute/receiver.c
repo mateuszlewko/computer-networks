@@ -41,8 +41,13 @@ struct recv_result recv_icmp(int sockfd, struct timeval max_timeout) {
         exit(EXIT_FAILURE);
     }
 
-    inet_ntop(AF_INET, &(sender.sin_addr), result.ip, 
-              sizeof(result.ip));
+    const char* ntop_res = inet_ntop(AF_INET, &(sender.sin_addr), result.ip, 
+                               sizeof(result.ip));
+
+    if (ntop_res == NULL) {
+        fprintf(stderr, "inet_ntop error: %s\n", strerror(errno)); 
+        exit(EXIT_FAILURE);
+    }
                 
     struct iphdr* ip_header     = (struct iphdr*) buffer;
     ssize_t       ip_header_len = 4 * ip_header->ihl;
