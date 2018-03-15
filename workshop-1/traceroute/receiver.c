@@ -1,5 +1,6 @@
 #include "receiver.h"
 #include "config.h"
+#include "utils.h"
 
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
@@ -9,6 +10,7 @@
 #include <strings.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 int recv_icmp(int sockfd) {
     struct sockaddr_in sender;    
@@ -22,7 +24,14 @@ int recv_icmp(int sockfd) {
     tv.tv_sec = WAIT_TIME_SEC; 
     tv.tv_usec = 0;
 
+    clock_t t = clock();
+   
     int ready = select(sockfd+1, &descriptors, NULL, NULL, &tv);
+   
+    t = clock() - t;
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+ 
+    printf("select() took %.6f seconds to execute \n", time_taken);
 
     if (ready < 0) {
         fprintf(stderr, "select error: %s\n", strerror(errno)); 

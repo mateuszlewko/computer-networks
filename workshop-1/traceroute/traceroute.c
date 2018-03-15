@@ -9,20 +9,29 @@
 #include <strings.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
-int main() {
+char* parse_args(int argc, char** argv) {
+    return argv[1];
+}
+
+void trace(char* ip_addr) {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    int pid = getpid();
+    printf("pid: %d\n", pid);
+
     if (sockfd < 0) {
         fprintf(stderr, "socket error: %s\n", strerror(errno)); 
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
-
-    char* addr = "8.8.8.8";
 
     for (int ttl = 1; ttl <= 30; ttl++) {
-        send_icmp(sockfd, addr, ttl);
+        send_icmp(sockfd, ip_addr, ttl, pid, ttl);
         recv_icmp(sockfd);
     }
+}
 
+int main(int argc, char** argv) {
+    trace(parse_args(argc ,argv));
     return EXIT_SUCCESS;
 }

@@ -11,6 +11,8 @@
         "ip.h": "c",
         "sender.h": "c",
         "stdlib.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "assert.h": "c",
+        "string.h": "c"
     }
 }
