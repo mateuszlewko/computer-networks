@@ -16,11 +16,6 @@ u_int16_t compute_icmp_checksum (const void *buff, int length) {
 	return (u_int16_t)(~(sum + (sum >> 16)));
 }
 
-u_int16_t get_uint16(const u_int8_t *buff, ssize_t len, ssize_t end_pos) {
-	ssize_t len2B = len / 2;
-	return (((u_int16_t*)buff)[len2B - end_pos]);
-}
-
 long time_diff_ms(struct timeval before, struct timeval after) {
 	return (before.tv_sec - after.tv_sec) * 1000L 
 	       + (before.tv_usec - after.tv_usec) / 1000L;

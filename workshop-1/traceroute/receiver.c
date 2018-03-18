@@ -11,6 +11,12 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 
+void print_as_bytes (unsigned char* buff, ssize_t length)
+{
+	for (ssize_t i = 0; i < length; i++, buff++)
+		printf ("%.2x ", *buff);	
+}
+
 struct recv_result recv_icmp(int sockfd, struct timeval max_timeout) {
     struct sockaddr_in sender;    
     socklen_t          sender_len = sizeof(sender);
@@ -55,8 +61,18 @@ struct recv_result recv_icmp(int sockfd, struct timeval max_timeout) {
     ssize_t len    = packet_len - ip_header_len;
     u_int8_t* data = buffer + ip_header_len;
 
-    result.id       = get_uint16(data, len, 2);
-    result.seq      = get_uint16(data, len, 1);
+    // puts("received:");
+    // print_as_bytes(buffer + ip_header_len, len);
+    // puts("");
+
+	ssize_t len16 = len / 2;
+	const u_int16_t *buff16 = (u_int16_t *)data;
+
+    result.id       = 17 < len16 ? buff16[16] : buff16[len16 - 2];
+    result.seq      = 17 < len16 ? buff16[17] : buff16[len16 - 1];
+
+    // printf("id: %d, seq: %d\n", result.id, result.seq);
+
     result.timeleft = max_timeout;
 
     return result;  

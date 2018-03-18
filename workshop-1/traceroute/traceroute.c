@@ -11,55 +11,47 @@
 #include "config.h"                    
 #include "receiver.h"                  
 #include "sender.h"                    
-#include "utils.h"                     
- 
-void fail_bad_host() {
-    puts("ERROR: Bad host format.");
-    exit(EXIT_FAILURE);
-}
+#include "utils.h"    
 
-char* parse_args(int argc, char** argv) {
+struct args {
+    char ip_str[20];
+    struct sockaddr_in recipient;
+};
+
+struct args parse_args(int argc, char** argv) {
     if (argc != 2) {
         puts("ERROR: Wrong number of arguments.");
         exit(EXIT_FAILURE);
     }
 
-    int cnt  = 0;
-    int curr = 0;
-    bool was_zero = false;
-    bool was_any = false;
+    struct args ars;
+    bzero(&ars, sizeof(ars));
+    memcpy(ars.ip_str, argv[1], strlen(argv[1]));
 
-    for (size_t i = 0; i < strlen(argv[1]); i++) {
-        if (argv[1][i] == '.' && (!was_any || curr > 255 || curr < 0)) {
-            fail_bad_host();
-        }
-        else if (argv[1][i] == '.') {
-            was_zero = false;
-            was_any = false;
-            cnt++;
-            curr = 0;
-            continue;
-        }
+    ars.recipient.sin_family = AF_INET;
+    int pton_res = inet_pton(AF_INET, argv[1], 
+                             &ars.recipient.sin_addr);
 
-        if (argv[1][i] == '0' && curr == 0 && was_zero) fail_bad_host();
-        if (argv[1][i] == '0') was_zero = true;
-
-        was_any = true;
-        curr *= 10;
-        curr += argv[1][i] - '0';
+    if (pton_res == 0) {
+        puts("Wrong host.");
+        exit(EXIT_FAILURE);
+    }
+    else if (pton_res < 0) {
+        perror("Wrong host. inet_pton error: %s\n");
+        exit(EXIT_FAILURE);
     }
 
-    if (!was_any || curr > 255 || curr < 0 || cnt != 3) fail_bad_host();
-
-    return argv[1];
+    return ars;
 }
 
-void trace(char* target_ip) {
+void trace(struct args ars) {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    int pid = getpid();
+    u_int16_t pid = getpid();
+
+    printf("pid: %d\n", pid);
 
     if (sockfd < 0) {
-        fprintf(stderr, "socket error: %s\n", strerror(errno)); 
+        perror("socket error: %s\n"); 
         exit(EXIT_FAILURE);
     }
 
@@ -73,8 +65,8 @@ void trace(char* target_ip) {
         char ip_addrs[IP_LEN][PACKETS_CNT] = {0};
         int diff_ip_cnt = 0;
 
-        for (int i = 0; i < PACKETS_CNT; i++) {
-            send_icmp(sockfd, target_ip, ttl, pid, ttl * MAX_TTL + i);
+        for (u_int16_t i = 0; i < PACKETS_CNT; i++) {
+            send_icmp(sockfd, ttl, pid, ttl * PACKETS_CNT + i, ars.recipient);
         }
 
         printf("%d. ", ttl);
@@ -85,8 +77,8 @@ void trace(char* target_ip) {
             if (!res.success) {
                 any_failed = true;
                 break;
-            } /* discard packet, but save left time */
-            else if (res.id != pid || res.seq / MAX_TTL != ttl) {
+            } // discard packet, but save left time 
+            else if (res.id != pid || res.seq / PACKETS_CNT != ttl) {
                 i--;
                 timeleft = res.timeleft;
                 continue;
@@ -113,7 +105,7 @@ void trace(char* target_ip) {
                                                 res.timeleft);
                 timeleft = res.timeleft;
 
-                if (strcmp(res.ip, target_ip) == 0) {
+                if (strcmp(res.ip, ars.ip_str) == 0) {
                     reached_final = true;
                 }
             }
@@ -136,6 +128,6 @@ void trace(char* target_ip) {
 }
 
 int main(int argc, char** argv) {
-    trace(parse_args(argc ,argv));
+    trace(parse_args(argc, argv));
     return EXIT_SUCCESS;
 }
