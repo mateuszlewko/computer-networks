@@ -1,17 +1,19 @@
-#include <bits/types/struct_timeval.h> 
-#include <errno.h>                     
-#include <netinet/in.h>                
-#include <stdbool.h>                   
-#include <stdio.h>                     
-#include <stdlib.h>                    
-#include <string.h>                    
-#include <sys/socket.h>                
-#include <unistd.h>                    
+#include "config.h"
+#include "receiver.h"
+#include "sender.h"
+#include "utils.h"
 
-#include "config.h"                    
-#include "receiver.h"                  
-#include "sender.h"                    
-#include "utils.h"    
+#include <arpa/inet.h>   
+#include <bits/types/struct_timeval.h>
+#include <netinet/in.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 struct args {
     char ip_str[20];
@@ -47,8 +49,6 @@ struct args parse_args(int argc, char** argv) {
 void trace(struct args ars) {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     u_int16_t pid = getpid();
-
-    printf("pid: %d\n", pid);
 
     if (sockfd < 0) {
         perror("socket error: %s\n"); 
