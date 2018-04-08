@@ -56,8 +56,25 @@ struct recv_result receive_entry(int sockfd, struct timeval max_timeout) {
 }
 
 bool is_from_network(ip_addr_t network_ip, byte mask, ip_addr_t ip) {
-    ip_addr_t check_mask = ((0xffffffff) >> (32 - mask)) << (32 - mask);
-    return (network_ip ^ (ip & check_mask)) == 0;
+    // puts("--- testing: is from network ---");
+    ip_addr_t check_mask = ((0xffffffff) >> (32 - mask));
+    // printf("check_mask 1) : "); print_ip_addr((byte*)&check_mask);
+    check_mask = check_mask << (32 - mask);
+    check_mask = htonl(check_mask);
+    // printf("check_mask 2) : "); print_ip_addr((byte*)&check_mask);
+    
+    
+    // printf("\nnetwork_ip & check_mask: "); 
+    ip_addr_t a = network_ip & check_mask;
+    // print_ip_addr((byte*)&a);
+
+    // printf("\nip & check_mask: "); 
+    ip_addr_t b = ip & check_mask;
+    // print_ip_addr((byte*)&b);
+
+    // puts("\n");
+
+    return ((network_ip & check_mask) ^ (ip & check_mask)) == 0;
 }
 
 void start_receive_round(struct table *direct, struct table *routing, 
@@ -80,7 +97,7 @@ void start_receive_round(struct table *direct, struct table *routing,
         print_ip_addr((byte*)&r.ip_addr);
         printf(" about: ");
         print_ip_addr((byte*)&r.entry_ip);
-        printf(" distance: %d\n", r.entry_distance);
+        printf("\ndistance: %d, mask: %hhu\n", r.entry_distance, r.entry_mask);
             
         // printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
 
@@ -92,18 +109,22 @@ void start_receive_round(struct table *direct, struct table *routing,
                 puts("");
 
                 e->last_ping_round = round;
-                bool found = true;
+                bool found = false;
 
                 for (int j = 0; j < routing->count; j++) {
                     struct entry *re = &routing->entries[j];
 
-                    if (re->ip_addr == r.entry_ip 
-                        && re->mask == r.entry_mask) {
+                    if (re->mask == r.entry_mask 
+                        && is_from_network(re->ip_addr, re->mask, r.entry_ip)) {
 
                         if ((uint64_t)e->distance + r.entry_distance 
                                 < re->distance) {
                             re->distance = e->distance + r.entry_distance;
                             re->via = r.ip_addr;
+                            re->last_ping_round = round;
+                        } 
+                        else if (re->via == r.ip_addr) {
+                            re->last_ping_round = round;
                         }
                         
                         found = true;
@@ -115,11 +136,12 @@ void start_receive_round(struct table *direct, struct table *routing,
 
                 if (!found) {
                     struct entry new_entry = { 
-                        .distance = e->distance + r.entry_distance,
-                        .via      = r.ip_addr,
-                        .ip_addr  = r.entry_ip,
-                        .mask     = r.entry_mask,
-                        .direct   = false
+                        .distance        = e->distance + r.entry_distance,
+                        .via             = r.ip_addr,
+                        .ip_addr         = r.entry_ip,
+                        .mask            = r.entry_mask,
+                        .direct          = false,
+                        .last_ping_round = round
                     };
 
                     add_entry(routing, new_entry);

@@ -2,6 +2,7 @@
 #include "sender.h"
 #include "receiver.h"
 #include "data.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,6 +49,7 @@ int main() {
     while (++round) {
         broadcast_table(sender_sockfd, &direct, &routing, round);
         start_receive_round(&direct, &routing, receiver_sockfd, round);
+        set_unreachable_to_inf(&routing, round);
         set_unreachable_to_inf(&direct, round);
         trim_unreachable(&direct, &routing, round);
 

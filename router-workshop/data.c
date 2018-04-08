@@ -53,7 +53,7 @@ void set_entry_broadcast_ip(struct entry *e) {
     
     uint32_t m = ((1 << (32 - e->mask)) - 1);
 
-    printf("ip A: %s\n", int2bin2(e->ip_addr, NULL));
+    // printf("ip A: %s\n", int2bin2(e->ip_addr, NULL));
 
 	server_address.sin_addr.s_addr = e->ip_addr | htonl(m);
 
@@ -103,7 +103,7 @@ void set_unreachable_to_inf(struct table* t, int64_t round) {
 
         if (e->last_ping_round < round - ROUNDS_WITHOUT_PING
             || e->distance >= INF_DIST) {
-            e->distance = (uint32_t)((1L<<32) - 1);
+            e->distance = (uint32_t)((1LL<<32) - 1);
         }   
     }
 }
@@ -124,5 +124,14 @@ void trim_unreachable(struct table* direct, struct table* routing,
         }
     }
 
-    // TODO: rem old
+    for (int i = 0; i < routing->count; i++) {
+        struct entry *re = &routing->entries[i];
+
+        if (re->last_ping_round < round - ROUNDS_WITHOUT_PING 
+            || re->distance >= INF_DIST) {
+            SWAP(routing->entries[i], routing->entries[routing->count]);
+            i--;
+            routing->count--;
+        }
+    }
 }
