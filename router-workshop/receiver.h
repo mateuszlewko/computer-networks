@@ -6,6 +6,7 @@
 
 struct recv_result { 
     bool           success;
+    bool           tle;
     struct timeval timeleft;
     ip_addr_t      ip_addr;
 

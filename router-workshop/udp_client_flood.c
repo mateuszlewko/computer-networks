@@ -5,6 +5,29 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <limits.h>
+
+char *int2bin(unsigned n, char *buf)
+{
+    #define BITS (sizeof(n) * CHAR_BIT)
+
+    static char static_buf[BITS + 1];
+    int i;
+
+    if (buf == NULL)
+        buf = static_buf;
+
+    for (i = BITS - 1; i >= 0; --i) {
+        buf[i] = (n & 1) ? '1' : '0';
+        n >>= 1;
+    }
+
+    buf[BITS] = '\0';
+    return buf;
+
+    #undef BITS
+}
 
 int main(int argc, char* argv[])
 {
@@ -23,7 +46,9 @@ int main(int argc, char* argv[])
 	bzero (&server_address, sizeof(server_address));
 	server_address.sin_family      = AF_INET;
 	server_address.sin_port        = htons(12345);
-	inet_pton(AF_INET, "127.0.0.1", &server_address.sin_addr);
+	inet_pton(AF_INET, "127.0.0.255", &server_address.sin_addr);
+	
+	printf("%s\n", int2bin(server_address.sin_addr.s_addr, NULL));
 
 	char* message = "Hello server!";
 	ssize_t message_len = strlen(message);

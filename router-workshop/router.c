@@ -4,6 +4,8 @@
 #include "data.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 
 int start_server() {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -24,6 +26,10 @@ int start_server() {
 int main() {
     struct table direct  = read_table();
     struct table routing = direct;
+
+    for (int i = 0; i < direct.count; i++) {
+        set_entry_broadcast_ip(&direct.entries[i]);
+    }
 
     print_table(&direct);
 

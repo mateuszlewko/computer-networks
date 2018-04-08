@@ -20,10 +20,13 @@ struct recv_result receive_entry(int sockfd, struct timeval max_timeout) {
 
     int ready = select(sockfd + 1, &descriptors, NULL, NULL, &max_timeout);
     struct recv_result result = { .success = false, .timeleft = max_timeout, 
-                                  .ip_addr = 0 };
+                                  .ip_addr = 0, .tle = false };
 
     if (ready < 0) ERROR_EXIT("select error");
-    else if (ready == 0) return result;
+    else if (ready == 0) {
+        result.tle = true;
+        return result;
+    }
 
     ssize_t datagram_len = recvfrom(sockfd, buffer, IP_MAXPACKET, 0, 
                                     (struct sockaddr*)&sender, &sender_len);
@@ -60,10 +63,17 @@ void start_receive_round(struct table *direct, struct table *routing,
                          int sockfd, int64_t round) {
     struct timeval duration;
     duration.tv_sec = ROUND_DURATION_SEC;
+    duration.tv_usec = 0;
 
     while (duration.tv_sec + duration.tv_usec > 0) {
+        printf("bef | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
+        
         struct recv_result r = receive_entry(sockfd, duration);
         duration = r.timeleft;
+
+        if (r.tle) return;
+
+        printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
 
         if (!r.success)
             continue;
@@ -76,7 +86,7 @@ void start_receive_round(struct table *direct, struct table *routing,
                 for (int j = 0; j < routing->count; j++) {
                     struct entry *re = &routing->entries[j];
 
-                    if (re->ip_addr = r.entry_ip 
+                    if (re->ip_addr == r.entry_ip 
                         && re->mask == r.entry_mask) {
 
                         if ((uint64_t)e->distance + r.entry_distance 

@@ -3,12 +3,11 @@ CFLAGS=-Wall -Wextra -std=gnu99 -g #-O2
 
 all: router
 
-router: utils.o receiver.o sender.o router.o
+router: data.o receiver.o sender.o router.o utils.h
 router.o: router.c
 
 receiver.o: receiver.c receiver.h
 sender.o: sender.c sender.h
-utils.o: utils.c utils.h
 data.o: data.c data.h
 
 .PHONY: clean distclean

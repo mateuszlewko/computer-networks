@@ -28,4 +28,6 @@ struct table {
 
 struct table read_table();
 
+void set_entry_broadcast_ip(struct entry *e);
+
 void print_table(const struct table *table);
