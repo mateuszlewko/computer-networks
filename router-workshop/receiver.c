@@ -66,17 +66,16 @@ void start_receive_round(struct table *direct, struct table *routing,
     duration.tv_usec = 0;
 
     while (duration.tv_sec + duration.tv_usec > 0) {
-        printf("bef | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
+        // printf("bef | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
         
         struct recv_result r = receive_entry(sockfd, duration);
         duration = r.timeleft;
 
         if (r.tle) return;
-
-        printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
-
         if (!r.success)
             continue;
+            
+        // printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
 
         for (int i = 0; i < direct->count; i++) {
             struct entry *e = &direct->entries[i];

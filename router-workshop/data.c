@@ -97,3 +97,31 @@ void print_table(const struct table *t) {
         print_entry(&t->entries[i]);
     }
 }
+
+void set_unreachable_to_inf(struct table* t, int64_t round) {
+    for (int i = 0; i < t->count; i++) {
+        struct entry *e = &t->entries[i];
+
+        if (e->last_ping_round < round - ROUNDS_WITHOUT_PING
+            || e->distance >= INF_DIST) {
+            e->distance = (uint32_t)((1L<<32) - 1);
+        }   
+    }
+}
+
+void trim_unreachable(struct table* direct, struct table* routing, 
+                      int64_t round) {
+    for (int i = 0; i < direct->count; i++) {
+        struct entry *e = &direct->entries[i];
+
+        if (e->distance >= INF_DIST) {
+            for (int j = 0; j < routing->count; j++) {
+                if (routing->entries[j].via == e->ip_addr) {
+                    swap(routing->entries[j], routing->entries[routing->count]);
+                    j--;
+                    routing->count--;
+                }
+            }
+        }
+    }
+}

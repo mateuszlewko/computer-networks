@@ -31,3 +31,8 @@ struct table read_table();
 void set_entry_broadcast_ip(struct entry *e);
 
 void print_table(const struct table *table);
+
+void set_unreachable_to_inf(struct table* t, int64_t round);
+
+void trim_unreachable(struct table* direct, struct table* routing, 
+                      int64_t round);

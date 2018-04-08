@@ -42,6 +42,8 @@ int main() {
     while (++round) {
         broadcast_table(sender_sockfd, &direct, &routing, round);
         start_receive_round(&direct, &routing, receiver_sockfd, round);
+        set_unreachable_to_inf(&direct, round);
+        trim_unreachable(&direct, &routing, round);
 
         print_table(&routing);
         puts("");
