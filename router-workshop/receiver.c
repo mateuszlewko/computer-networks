@@ -1,5 +1,6 @@
 #include "receiver.h"
 #include "utils.h"
+#include "data.h"
 
 #include <netinet/ip.h>
 #include <arpa/inet.h>
@@ -74,14 +75,25 @@ void start_receive_round(struct table *direct, struct table *routing,
         if (r.tle) return;
         if (!r.success)
             continue;
+
+        printf("received from: ");
+        print_ip_addr((byte*)&r.ip_addr);
+        printf(" about: ");
+        print_ip_addr((byte*)&r.entry_ip);
+        printf(" distance: %d\n", r.entry_distance);
             
         // printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
 
         for (int i = 0; i < direct->count; i++) {
             struct entry *e = &direct->entries[i];
             if (is_from_network(e->ip_addr, e->mask, r.ip_addr)) {
+                printf("from network: ");
+                print_ip_addr((byte*)&e->ip_addr);
+                puts("");
+
                 e->last_ping_round = round;
-                
+                bool found = true;
+
                 for (int j = 0; j < routing->count; j++) {
                     struct entry *re = &routing->entries[j];
 
@@ -94,8 +106,23 @@ void start_receive_round(struct table *direct, struct table *routing,
                             re->via = r.ip_addr;
                         }
                         
+                        found = true;
                         break;
                     }
+                }
+
+                printf("found: %d\n", found);
+
+                if (!found) {
+                    struct entry new_entry = { 
+                        .distance = e->distance + r.entry_distance,
+                        .via      = r.ip_addr,
+                        .ip_addr  = r.entry_ip,
+                        .mask     = r.entry_mask,
+                        .direct   = false
+                    };
+
+                    add_entry(routing, new_entry);
                 }
 
                 break;

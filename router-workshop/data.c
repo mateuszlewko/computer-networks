@@ -21,7 +21,6 @@ void add_entry(struct table *t, struct entry e) {
     t->entries[t->count++] = e;
 }
 
-
 #include <limits.h>
 
 char *int2bin2(unsigned n, char *buf)
@@ -117,11 +116,13 @@ void trim_unreachable(struct table* direct, struct table* routing,
         if (e->distance >= INF_DIST) {
             for (int j = 0; j < routing->count; j++) {
                 if (routing->entries[j].via == e->ip_addr) {
-                    swap(routing->entries[j], routing->entries[routing->count]);
+                    SWAP(routing->entries[j], routing->entries[routing->count]);
                     j--;
                     routing->count--;
                 }
             }
         }
     }
+
+    // TODO: rem old
 }

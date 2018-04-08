@@ -26,9 +26,13 @@ struct table {
     struct entry entries[MAX_TABLE_SIZE];
 };
 
+void add_entry(struct table *t, struct entry e);
+
 struct table read_table();
 
 void set_entry_broadcast_ip(struct entry *e);
+
+void print_ip_addr(byte *ip_addr);
 
 void print_table(const struct table *table);
 

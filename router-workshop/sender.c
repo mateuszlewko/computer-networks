@@ -35,10 +35,10 @@ int send_entry(int sockfd, const struct sockaddr_in *network_ip,
     message[4]                  = e->mask;
     *((uint32_t*)(message + 5)) = e->distance;
 
-    printf("ip: %s\n", int2bin(network_ip->sin_addr.s_addr, NULL));
+    // printf("ip: %s\n", int2bin(network_ip->sin_addr.s_addr, NULL));
 
     return sendto(sockfd, message, 9, 0, (struct sockaddr*)network_ip, 
-                     sizeof(*network_ip));
+                  sizeof(*network_ip));
 }
 
 void broadcast_table(int sockfd, struct table *direct, struct table *routing,

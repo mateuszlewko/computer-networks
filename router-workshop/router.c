@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <strings.h>
 
 int start_server() {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -35,6 +36,11 @@ int main() {
 
     int sender_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sender_sockfd < 0) ERROR_EXIT("sender socket");
+
+    int broadcastEnable=1;
+    int ret=setsockopt(sender_sockfd, SOL_SOCKET, SO_BROADCAST, 
+                       &broadcastEnable, sizeof(broadcastEnable));
+
 
     int receiver_sockfd = start_server();
     
