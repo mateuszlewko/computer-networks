@@ -78,7 +78,9 @@ void print_ip_addr(byte *ip_addr) {
 }
 
 void print_entry(const struct entry *e) {
-    print_ip_addr((byte*)&e->ip_addr);
+    ip_addr_t ip = e->ip_addr & ((0xffffffff) >> (32 - e->mask));
+    
+    print_ip_addr((byte*)&ip);
     printf("/%hhu distance %u ", e->mask, e->distance);
 
     if (e->direct) { 
