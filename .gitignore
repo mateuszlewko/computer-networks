@@ -1,6 +1,5 @@
 **/*.gch
 a.out
-mateusz_lewko
 mateusz_lewko.tar.bz2
 **/*.o
 .vscode
