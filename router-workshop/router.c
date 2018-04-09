@@ -33,7 +33,7 @@ int main() {
         set_entry_broadcast_ip(&direct.entries[i]);
     }
 
-    print_table(&direct);
+    // print_table(&direct, 0);
 
     int sender_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sender_sockfd < 0) ERROR_EXIT("sender socket");
@@ -50,10 +50,11 @@ int main() {
         broadcast_table(sender_sockfd, &direct, &routing, round);
         start_receive_round(&direct, &routing, receiver_sockfd, round);
         set_unreachable_to_inf(&routing, round);
-        set_unreachable_to_inf(&direct, round);
+        // set_unreachable_to_inf(&direct, round);
         trim_unreachable(&direct, &routing, round);
+        add_from_direct(&direct, &routing, round);
 
-        print_table(&routing);
+        print_table(&routing, round);
         puts("");
     }
 }

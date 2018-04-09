@@ -54,7 +54,10 @@ void broadcast_table(int sockfd, struct table *direct, struct table *routing,
             // or "No route to the network is present.""
             if (errno == ENOTCONN || errno == ENETUNREACH) {
                 direct->entries[i].last_ping_round = 
-                    round - ROUNDS_WITHOUT_PING;
+                    MIN(direct->entries[i].last_ping_round, 
+                        round - ROUNDS_WITHOUT_PING - 1);
+                
+                puts("$$error sending");
             }
             else ERROR_EXIT("sendto");
         }

@@ -4,10 +4,12 @@
 } while (0)
 
 #define SWAP(x,y) do {    \
-   typeof(x) _x = x;      \
-   typeof(y) _y = y;      \
-   x = _y;                \
-   y = _x;                \
- } while(0)
+    typeof(x) _x = x;      \
+    typeof(y) _y = y;      \
+    x = _y;                \
+    y = _x;                \
+} while(0)
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 typedef unsigned char byte;

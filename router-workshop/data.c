@@ -6,6 +6,8 @@
 
 struct entry read_entry() {
     struct entry e;
+    e.last_ping_round = 0;
+    e.via = 0;
     byte *ip = (byte*)&e.ip_addr;
 
     scanf("%hhu.%hhu.%hhu.%hhu/%hhu distance %ud", &ip[0], &ip[1], &ip[2]
@@ -19,29 +21,6 @@ struct entry read_entry() {
 void add_entry(struct table *t, struct entry e) {
     assert(t->count < MAX_TABLE_SIZE);
     t->entries[t->count++] = e;
-}
-
-#include <limits.h>
-
-char *int2bin2(unsigned n, char *buf)
-{
-    #define BITS (sizeof(n) * CHAR_BIT)
-
-    static char static_buf[BITS + 1];
-    int i;
-
-    if (buf == NULL)
-        buf = static_buf;
-
-    for (i = BITS - 1; i >= 0; --i) {
-        buf[i] = (n & 1) ? '1' : '0';
-        n >>= 1;
-    }
-
-    buf[BITS] = '\0';
-    return buf;
-
-    #undef BITS
 }
 
 void set_entry_broadcast_ip(struct entry *e) {
@@ -77,13 +56,18 @@ void print_ip_addr(byte *ip_addr) {
                                 , ip_addr[3]);
 }
 
-void print_entry(const struct entry *e) {
+void print_entry(const struct entry *e, int64_t round) {
     ip_addr_t ip = e->ip_addr & ((0xffffffff) >> (32 - e->mask));
-    
-    print_ip_addr((byte*)&ip);
-    printf("/%hhu distance %u ", e->mask, e->distance);
 
-    if (e->direct) { 
+    print_ip_addr((byte*)&ip);
+    bool reachable = e->distance < INF_DIST 
+                     && e->last_ping_round > round - ROUNDS_WITHOUT_PING;
+
+    if (reachable)
+        printf("/%hhu distance %u ", e->mask, e->distance);
+    else printf("/%hhu unreachable ", e->mask);
+
+    if (e->direct || !reachable) { 
         puts("connected directly");
     }
     else {
@@ -93,9 +77,9 @@ void print_entry(const struct entry *e) {
     }
 }  
 
-void print_table(const struct table *t) {
+void print_table(const struct table *t, int64_t round) {
     for (int i = 0; i < t->count; i++) {
-        print_entry(&t->entries[i]);
+        print_entry(&t->entries[i], round);
     }
 }
 
@@ -115,9 +99,10 @@ void trim_unreachable(struct table* direct, struct table* routing,
     for (int i = 0; i < direct->count; i++) {
         struct entry *e = &direct->entries[i];
 
-        if (e->distance >= INF_DIST) {
+        if (e->last_ping_round < round - ROUNDS_SEND_UNREACHABLE) {
             for (int j = 0; j < routing->count; j++) {
-                if (routing->entries[j].via == e->ip_addr) {
+                if (routing->entries[j].via == e->ip_addr 
+                    && !routing->entries[j].direct) {
                     SWAP(routing->entries[j], routing->entries[routing->count]);
                     j--;
                     routing->count--;
@@ -129,11 +114,67 @@ void trim_unreachable(struct table* direct, struct table* routing,
     for (int i = 0; i < routing->count; i++) {
         struct entry *re = &routing->entries[i];
 
-        if (re->last_ping_round < round - ROUNDS_WITHOUT_PING 
-            || re->distance >= INF_DIST) {
+        if (!re->direct 
+            && re->last_ping_round < round - ROUNDS_SEND_UNREACHABLE) {
             SWAP(routing->entries[i], routing->entries[routing->count]);
             i--;
             routing->count--;
         }
+    }
+}
+
+bool is_from_network(ip_addr_t network_ip, byte mask, ip_addr_t ip) {
+    // puts("--- testing: is from network ---");
+    ip_addr_t check_mask = ((0xffffffff) >> (32 - mask));
+    // printf("check_mask 1) : "); print_ip_addr((byte*)&check_mask);
+    check_mask = check_mask << (32 - mask);
+    check_mask = htonl(check_mask);
+    // printf("check_mask 2) : "); print_ip_addr((byte*)&check_mask);
+    
+    
+    // printf("\nnetwork_ip & check_mask: "); 
+    ip_addr_t a = network_ip & check_mask;
+    // print_ip_addr((byte*)&a);
+
+    // printf("\nip & check_mask: "); 
+    ip_addr_t b = ip & check_mask;
+    // print_ip_addr((byte*)&b);
+
+    // puts("\n");
+
+    return ((network_ip & check_mask) ^ (ip & check_mask)) == 0;
+}
+
+void add_from_direct(struct table* direct, struct table* routing, 
+                     int64_t round) {
+    for (int i = 0; i < direct->count; i++) {
+        struct entry *e = &direct->entries[i];
+
+        // if (e->last_ping_round > round - ROUNDS_WITHOUT_PING
+        //     && e->distance < INF_DIST) {
+        bool found = false;
+
+        for (int j = 0; j < routing->count; j++) {
+            struct entry *re = &routing->entries[j];
+            if (re->mask == e->mask 
+                && is_from_network(re->ip_addr, e->mask, e->ip_addr)) {
+                if (e->distance < re->distance
+                    && e->last_ping_round > round - ROUNDS_WITHOUT_PING) {
+                    re->distance = e->distance;
+                    re->direct = true;
+                    re->via = 0;
+                    re->last_ping_round = e->last_ping_round;
+                    re->ip_addr = e->ip_addr;
+                }
+                
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            add_entry(routing, *e);
+        }
+        // }
     }
 }

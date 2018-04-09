@@ -55,28 +55,6 @@ struct recv_result receive_entry(int sockfd, struct timeval max_timeout) {
     return result;
 }
 
-bool is_from_network(ip_addr_t network_ip, byte mask, ip_addr_t ip) {
-    // puts("--- testing: is from network ---");
-    ip_addr_t check_mask = ((0xffffffff) >> (32 - mask));
-    // printf("check_mask 1) : "); print_ip_addr((byte*)&check_mask);
-    check_mask = check_mask << (32 - mask);
-    check_mask = htonl(check_mask);
-    // printf("check_mask 2) : "); print_ip_addr((byte*)&check_mask);
-    
-    
-    // printf("\nnetwork_ip & check_mask: "); 
-    ip_addr_t a = network_ip & check_mask;
-    // print_ip_addr((byte*)&a);
-
-    // printf("\nip & check_mask: "); 
-    ip_addr_t b = ip & check_mask;
-    // print_ip_addr((byte*)&b);
-
-    // puts("\n");
-
-    return ((network_ip & check_mask) ^ (ip & check_mask)) == 0;
-}
-
 void start_receive_round(struct table *direct, struct table *routing, 
                          int sockfd, int64_t round) {
     struct timeval duration;
@@ -93,20 +71,20 @@ void start_receive_round(struct table *direct, struct table *routing,
         if (!r.success)
             continue;
 
-        // printf("received from: ");
-        // print_ip_addr((byte*)&r.ip_addr);
-        // printf(" about: ");
-        // print_ip_addr((byte*)&r.entry_ip);
-        // printf("\ndistance: %d, mask: %hhu\n", r.entry_distance, r.entry_mask);
+        printf("received from: ");
+        print_ip_addr((byte*)&r.ip_addr);
+        printf(" about: ");
+        print_ip_addr((byte*)&r.entry_ip);
+        printf("\ndistance: %u, mask: %hhu\n", r.entry_distance, r.entry_mask);
             
         // printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
 
         for (int i = 0; i < direct->count; i++) {
             struct entry *e = &direct->entries[i];
             if (is_from_network(e->ip_addr, e->mask, r.ip_addr)) {
-                // printf("from network: ");
-                // print_ip_addr((byte*)&e->ip_addr);
-                // puts("");
+                printf("from network: ");
+                print_ip_addr((byte*)&e->ip_addr);
+                puts("");
 
                 e->last_ping_round = round;
                 bool found = false;
@@ -118,15 +96,17 @@ void start_receive_round(struct table *direct, struct table *routing,
                         && is_from_network(re->ip_addr, re->mask, r.entry_ip)) {
 
                         if ((uint64_t)e->distance + r.entry_distance 
-                                < re->distance) {
+                                < (uint64_t)re->distance) {
                             re->distance = e->distance + r.entry_distance;
                             re->via = r.ip_addr;
+                            re->direct = false;
                             re->last_ping_round = round;
                         } 
-                        else if (re->via == r.ip_addr) {
+                        else if (!re->direct && re->via == r.ip_addr) {
                             re->last_ping_round = round;
-                            if (r.entry_distance > INF_DIST)
+                            if (r.entry_distance >= INF_DIST)
                                 re->distance = r.entry_distance;
+                            else re->distance = e->distance + r.entry_distance;
                         }
                         
                         found = true;
@@ -134,7 +114,7 @@ void start_receive_round(struct table *direct, struct table *routing,
                     }
                 }
 
-                // printf("found: %d\n", found);
+                printf("found: %d\n", found);
 
                 if (!found) {
                     struct entry new_entry = { 

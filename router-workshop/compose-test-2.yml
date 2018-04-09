@@ -4,6 +4,8 @@ services:
     stdin_open: true
     tty: true
     build: .
+    cap_add:
+      - NET_ADMIN
     environment:
       - MACHINE_NAME=a
       - TEST_SUITE=test-2
@@ -15,6 +17,8 @@ services:
       ad:
         ipv4_address: 192.168.17.200
   b:
+    cap_add:
+      - NET_ADMIN
     stdin_open: true
     tty: true
     build: .
@@ -29,6 +33,8 @@ services:
       bc:
         ipv4_address: 192.168.2.10
   c:
+    cap_add:
+      - NET_ADMIN
     stdin_open: true
     tty: true
     build: .
@@ -43,6 +49,8 @@ services:
       cd:
         ipv4_address: 192.168.5.5
   d:
+    cap_add:
+      - NET_ADMIN
     stdin_open: true
     tty: true
     build: .
