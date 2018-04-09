@@ -39,14 +39,14 @@ int main() {
 	if (sender_sockfd < 0) ERROR_EXIT("sender socket");
 
     int broadcastEnable=1;
-    int ret=setsockopt(sender_sockfd, SOL_SOCKET, SO_BROADCAST, 
+    setsockopt(sender_sockfd, SOL_SOCKET, SO_BROADCAST, 
                        &broadcastEnable, sizeof(broadcastEnable));
 
 
     int receiver_sockfd = start_server();
     
     int64_t round = 0;
-    while (++round) {
+    while (++round > 0) {
         broadcast_table(sender_sockfd, &direct, &routing, round);
         start_receive_round(&direct, &routing, receiver_sockfd, round);
         set_unreachable_to_inf(&routing, round);

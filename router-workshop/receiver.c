@@ -108,6 +108,9 @@ void start_receive_round(struct table *direct, struct table *routing,
                                 re->distance = r.entry_distance;
                             else re->distance = e->distance + r.entry_distance;
                         }
+
+                        if (re->direct && re->ip_addr == r.ip_addr)
+                            re->last_ping_round = round;
                         
                         found = true;
                         break;
