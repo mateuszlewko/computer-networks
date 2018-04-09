@@ -103,10 +103,13 @@ void start_receive_round(struct table *direct, struct table *routing,
                             re->last_ping_round = round;
                         } 
                         else if (!re->direct && re->via == r.ip_addr) {
-                            re->last_ping_round = round;
+
                             if (r.entry_distance >= INF_DIST)
                                 re->distance = r.entry_distance;
-                            else re->distance = e->distance + r.entry_distance;
+                            else {
+                                re->distance = e->distance + r.entry_distance;
+                                re->last_ping_round = round;
+                            }
                         }
 
                         if (re->direct && re->ip_addr == r.ip_addr)
@@ -119,7 +122,7 @@ void start_receive_round(struct table *direct, struct table *routing,
 
                 // printf("found: %d\n", found);
 
-                if (!found) {
+                if (!found && e->distance + r.entry_distance < INF_DIST) {
                     struct entry new_entry = { 
                         .distance        = e->distance + r.entry_distance,
                         .via             = r.ip_addr,

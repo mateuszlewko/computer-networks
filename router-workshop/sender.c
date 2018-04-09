@@ -20,6 +20,10 @@ void broadcast_table(int sockfd, struct table *direct, struct table *routing,
                      int64_t round) {
     for (int i = 0; i < direct->count; i++) {
         for (int j = 0; j < routing->count; j++) {
+            if (routing->entries[j].last_ping_round
+                    < round - ROUNDS_SEND_UNREACHABLE)
+                continue;
+
             int res = send_entry(sockfd, &direct->entries[i].net_broad_addr, 
                                  &routing->entries[j]);
 
