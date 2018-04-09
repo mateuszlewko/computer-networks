@@ -71,20 +71,20 @@ void start_receive_round(struct table *direct, struct table *routing,
         if (!r.success)
             continue;
 
-        printf("received from: ");
-        print_ip_addr((byte*)&r.ip_addr);
-        printf(" about: ");
-        print_ip_addr((byte*)&r.entry_ip);
-        printf("\ndistance: %u, mask: %hhu\n", r.entry_distance, r.entry_mask);
+        // printf("received from: ");
+        // print_ip_addr((byte*)&r.ip_addr);
+        // printf(" about: ");
+        // print_ip_addr((byte*)&r.entry_ip);
+        // printf("\ndistance: %u, mask: %hhu\n", r.entry_distance, r.entry_mask);
             
         // printf("af | sec: %ld, usec: %ld\n", duration.tv_sec, duration.tv_usec);
 
         for (int i = 0; i < direct->count; i++) {
             struct entry *e = &direct->entries[i];
             if (is_from_network(e->ip_addr, e->mask, r.ip_addr)) {
-                printf("from network: ");
-                print_ip_addr((byte*)&e->ip_addr);
-                puts("");
+                // printf("from network: ");
+                // print_ip_addr((byte*)&e->ip_addr);
+                // puts("");
 
                 e->last_ping_round = round;
                 bool found = false;
@@ -114,7 +114,7 @@ void start_receive_round(struct table *direct, struct table *routing,
                     }
                 }
 
-                printf("found: %d\n", found);
+                // printf("found: %d\n", found);
 
                 if (!found) {
                     struct entry new_entry = { 

@@ -5,29 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <limits.h>
-
-char *int2bin(unsigned n, char *buf)
-{
-    #define BITS (sizeof(n) * CHAR_BIT)
-
-    static char static_buf[BITS + 1];
-    int i;
-
-    if (buf == NULL)
-        buf = static_buf;
-
-    for (i = BITS - 1; i >= 0; --i) {
-        buf[i] = (n & 1) ? '1' : '0';
-        n >>= 1;
-    }
-
-    buf[BITS] = '\0';
-    return buf;
-
-    #undef BITS
-}
-
 int send_entry(int sockfd, const struct sockaddr_in *network_ip,
                 const struct entry *e) {
     byte message[9];
@@ -57,7 +34,7 @@ void broadcast_table(int sockfd, struct table *direct, struct table *routing,
                     MIN(direct->entries[i].last_ping_round, 
                         round - ROUNDS_WITHOUT_PING - 1);
                 
-                puts("$$error sending");
+                // puts("$$error sending");
             }
             else ERROR_EXIT("sendto");
         }
