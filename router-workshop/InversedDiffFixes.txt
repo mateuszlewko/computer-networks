@@ -1,0 +1,78 @@
+diff --git a/router-workshop/mateusz_lewko/data.c b/router-workshop/mateusz_lewko/data.c
+index 4050c02..22b9259 100644
+--- a/router-workshop/mateusz_lewko/data.c
++++ b/router-workshop/mateusz_lewko/data.c
+@@ -67,7 +67,7 @@ void print_entry(const struct entry *e, int64_t round) {
+         printf("/%hhu distance %u ", e->mask, e->distance);
+     else printf("/%hhu unreachable ", e->mask);
+ 
+-    // printf(" | last: %lld round: %lld | ", e->last_ping_round, round);
++    //printf(" | last: %lld round: %lld | ", e->last_ping_round, round);
+ 
+     if (e->direct || !reachable) { 
+         puts("connected directly");
+diff --git a/router-workshop/mateusz_lewko/receiver.c b/router-workshop/mateusz_lewko/receiver.c
+index 8ed1a99..b92d263 100644
+--- a/router-workshop/mateusz_lewko/receiver.c
++++ b/router-workshop/mateusz_lewko/receiver.c
+@@ -103,13 +103,10 @@ void start_receive_round(struct table *direct, struct table *routing,
+                             re->last_ping_round = round;
+                         } 
+                         else if (!re->direct && re->via == r.ip_addr) {
+-
++                            re->last_ping_round = round;
+                             if (r.entry_distance >= INF_DIST)
+                                 re->distance = r.entry_distance;
+-                            else {
+-                                re->distance = e->distance + r.entry_distance;
+-                                re->last_ping_round = round;
+-                            }
++                            else re->distance = e->distance + r.entry_distance;
+                         }
+ 
+                         if (re->direct && re->ip_addr == r.ip_addr)
+@@ -122,7 +119,7 @@ void start_receive_round(struct table *direct, struct table *routing,
+ 
+                 // printf("found: %d\n", found);
+ 
+-                if (!found && e->distance + r.entry_distance < INF_DIST) {
++                if (!found) {
+                     struct entry new_entry = { 
+                         .distance        = e->distance + r.entry_distance,
+                         .via             = r.ip_addr,
+diff --git a/router-workshop/mateusz_lewko/router.c b/router-workshop/mateusz_lewko/router.c
+index 20d0a35..4e265dc 100644
+--- a/router-workshop/mateusz_lewko/router.c
++++ b/router-workshop/mateusz_lewko/router.c
+@@ -39,14 +39,14 @@ int main() {
+ 	if (sender_sockfd < 0) ERROR_EXIT("sender socket");
+ 
+     int broadcastEnable=1;
+-    setsockopt(sender_sockfd, SOL_SOCKET, SO_BROADCAST, 
++    int ret=setsockopt(sender_sockfd, SOL_SOCKET, SO_BROADCAST, 
+                        &broadcastEnable, sizeof(broadcastEnable));
+ 
+ 
+     int receiver_sockfd = start_server();
+     
+     int64_t round = 0;
+-    while (++round > 0) {
++    while (++round) {
+         broadcast_table(sender_sockfd, &direct, &routing, round);
+         start_receive_round(&direct, &routing, receiver_sockfd, round);
+         set_unreachable_to_inf(&routing, round);
+diff --git a/router-workshop/mateusz_lewko/sender.c b/router-workshop/mateusz_lewko/sender.c
+index 0ea9cbe..4aa3012 100644
+--- a/router-workshop/mateusz_lewko/sender.c
++++ b/router-workshop/mateusz_lewko/sender.c
+@@ -20,10 +20,6 @@ void broadcast_table(int sockfd, struct table *direct, struct table *routing,
+                      int64_t round) {
+     for (int i = 0; i < direct->count; i++) {
+         for (int j = 0; j < routing->count; j++) {
+-            if (routing->entries[j].last_ping_round
+-                    < round - ROUNDS_SEND_UNREACHABLE)
+-                continue;
+-
+             int res = send_entry(sockfd, &direct->entries[i].net_broad_addr, 
+                                  &routing->entries[j]);
+ 

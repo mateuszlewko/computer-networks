@@ -67,7 +67,7 @@ void print_entry(const struct entry *e, int64_t round) {
         printf("/%hhu distance %u ", e->mask, e->distance);
     else printf("/%hhu unreachable ", e->mask);
 
-    // printf(" | last: %lld round: %lld | ", e->last_ping_round, round);
+    //printf(" | last: %lld round: %lld | ", e->last_ping_round, round);
 
     if (e->direct || !reachable) { 
         puts("connected directly");

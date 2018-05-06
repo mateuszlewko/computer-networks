@@ -46,7 +46,7 @@ int main() {
     int receiver_sockfd = start_server();
     
     int64_t round = 0;
-    while (++round > 0) {
+    while (++round>0) {
         broadcast_table(sender_sockfd, &direct, &routing, round);
         start_receive_round(&direct, &routing, receiver_sockfd, round);
         set_unreachable_to_inf(&routing, round);
