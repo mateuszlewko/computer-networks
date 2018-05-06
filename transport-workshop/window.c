@@ -19,6 +19,18 @@ bool all_done(const struct window *w) {
     return w->curr_segment_saved >= w->total_segments - 1;
 }
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+void print_progress (double percentage)
+{  // source: https://stackoverflow.com/questions/14539867/how-to-display-a-progress-indicator-in-pure-c-c-cout-printf
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush (stdout);
+}
+
 void set_received(struct window *w, int segment, const char *data) {
     if (segment > w->curr_segment_saved + SEGMENTS_CNT
         || segment <= w->curr_segment_saved)
@@ -38,7 +50,7 @@ void set_received(struct window *w, int segment, const char *data) {
         w->received[next_pos] = false;
         fwrite(w->buffers[next_pos], sizeof(char), len, w->file);
         
-        printf("done %d/%d\n", w->curr_segment_saved + 1, w->total_segments);
+        print_progress((double)(w->curr_segment_saved + 2) / w->total_segments);
 
         w->curr_segment_saved++;
         next_pos = (next_pos + 1) % SEGMENTS_CNT;

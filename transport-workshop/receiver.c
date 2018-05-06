@@ -32,11 +32,14 @@ struct info receive_segment(int sockfd, char *received_data) {
               sizeof(sender_ip_str));
 
     struct info res;
+    res.length = 0;
+
+    if (strcmp(sender_ip_str, DESTINATION_IP))
+        return res;
+
     sscanf((char*)buffer, "DATA %d %d\n", &res.start, &res.length);
     memcpy(received_data, strchr((char*)buffer, '\n') + 1, res.length);
     
-    // printf("received; start: %d, len : %d\n", res.start, res.length);
-
     return res;
 }
 
