@@ -48,7 +48,8 @@ void set_received(struct window *w, int segment, const char *data) {
     int next_pos = (w->curr_segment_saved + 1) % SEGMENTS_CNT;
     while (w->received[next_pos]) {
         w->received[next_pos] = false;
-        fwrite(w->buffers[next_pos], sizeof(char), len, w->file);
+        fwrite(w->buffers[next_pos], sizeof(char), 
+               segment_len(w, w->curr_segment_saved + 1), w->file);
         
         print_progress((double)(w->curr_segment_saved + 2) / w->total_segments);
 
