@@ -35,7 +35,7 @@ struct info receive_segment(int sockfd, char *received_data) {
     sscanf((char*)buffer, "DATA %d %d\n", &res.start, &res.length);
     memcpy(received_data, strchr((char*)buffer, '\n') + 1, res.length);
     
-    printf("received; start: %d, len : %d\n", res.start, res.length);
+    // printf("received; start: %d, len : %d\n", res.start, res.length);
 
     return res;
 }

@@ -17,12 +17,8 @@ struct window {
 
 struct window create_window(FILE *file, int total_length);
 
-inline int segment_len(const struct window *w, int segment) {
-    return MIN(w->total_length - segment * SEGMENT_LEN, SEGMENT_LEN);
-}
+int segment_len(const struct window *w, int segment);
 
-inline bool all_done(const struct window *w) {
-    return w->curr_segment_saved == w->total_segments;
-}
+bool all_done(const struct window *w);
 
 void set_received(struct window *w, int segment, const char *data);

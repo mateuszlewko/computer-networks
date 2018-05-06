@@ -10,8 +10,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <errno.h>
-#include "window.h"
-
 #include <stdbool.h>
 #include <pthread.h>
 
