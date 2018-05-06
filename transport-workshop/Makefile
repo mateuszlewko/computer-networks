@@ -1,14 +1,15 @@
-CC=gcc 
-CFLAGS=-Wall -Wextra -std=gnu99 -O2 -Werror
+CC = gcc 
+CFLAGS = -Wall -Wextra -std=gnu99 -O2
+LDFLAGS = -lpthread
 
 all: transport
 
-transport: sender.o transport.o
+transport: window.o receiver.o sender.o transport.o
 transport.o: transport.c
 
-# receiver.o: receiver.c receiver.h
+receiver.o: receiver.c receiver.h
 sender.o: sender.c sender.h
-# utils.o: utils.c utils.h
+window.o: window.c window.h
 
 .PHONY: clean distclean
 

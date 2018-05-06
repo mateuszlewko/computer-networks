@@ -1,9 +1,12 @@
 #pragma once
 
+#include "window.h"
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 
 struct sockaddr_in;
 
-int send_request(int sockfd, const struct sockaddr_in *network_ip, int start, 
-                 int length);
+bool send_all(struct window *w, pthread_mutex_t *mutex, int sockfd, 
+              const struct sockaddr_in *ip);
